@@ -44,3 +44,18 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+/* Light Theme Variables */
+body.light-theme {
+  --bg-base: 220 30% 95%;
+  --bg-surface: 220 25% 90%;
+  --bg-card: 220 20% 86%;
+  --border-color: 220 15% 76%;
+  
+  --text-primary: 220 20% 12%;
+  --text-secondary: 220 15% 30%;
+  --text-muted: 220 10% 50%;
+  
+  --accent-primary: 210 100% 45%; /* Deep Blue */
+  --accent-primary-rgb: 0, 90, 220;
+}

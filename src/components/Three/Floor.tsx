@@ -6,9 +6,10 @@ interface FloorProps {
   floor: FloorType;
   aisles: Aisle[];
   onFloorDoubleClick: (point: THREE.Vector3) => void;
+  isDark?: boolean;
 }
 
-export const Floor: React.FC<FloorProps> = ({ floor, aisles, onFloorDoubleClick }) => {
+export const Floor: React.FC<FloorProps> = ({ floor, aisles, onFloorDoubleClick, isDark = true }) => {
   const { width, length } = floor;
 
   const handleDoubleClick = (e: any) => {
@@ -27,16 +28,16 @@ export const Floor: React.FC<FloorProps> = ({ floor, aisles, onFloorDoubleClick 
       >
         <planeGeometry args={[width, length]} />
         <meshStandardMaterial 
-          color="#1e222b" 
-          roughness={0.6} 
-          metalness={0.4} 
+          color={isDark ? "#1e222b" : "#d8dee9"} 
+          roughness={isDark ? 0.6 : 0.8} 
+          metalness={isDark ? 0.4 : 0.15} 
         />
       </mesh>
 
       {/* Outer Border / Safety Walls Base */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
         <planeGeometry args={[width + 4, length + 4]} />
-        <meshBasicMaterial color="#0d0f13" />
+        <meshBasicMaterial color={isDark ? "#0d0f13" : "#eceff4"} />
       </mesh>
 
       {/* Safety Warning Stripes along floor edges (yellow/black) */}

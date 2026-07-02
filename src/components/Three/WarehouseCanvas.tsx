@@ -13,6 +13,7 @@ interface WarehouseCanvasProps {
   onSelectBay: (bayId: string) => void;
   onMoveRack: (rackId: string, x: number, z: number) => void;
   cameraView: 'orbit' | 'top' | 'isometric' | 'aisle';
+  theme?: 'dark' | 'light';
 }
 
 // Sub-component to manage smooth camera transitions and floor click navigation
@@ -116,8 +117,12 @@ export const WarehouseCanvas: React.FC<WarehouseCanvasProps> = ({
   selectedBayId,
   onSelectBay,
   onMoveRack,
-  cameraView
+  cameraView,
+  theme = 'dark'
 }) => {
+  const isDark = theme === 'dark';
+  const bgColor = isDark ? '#0d0f13' : '#f4f6f9';
+
   // Generate ceiling point lights above aisles for warehouse look
   const lightPositions = layout.aisles.map(aisle => [
     [aisle.x, 15, -layout.floor.length / 3],
@@ -134,16 +139,16 @@ export const WarehouseCanvas: React.FC<WarehouseCanvasProps> = ({
         camera={{ position: [30, 25, 40], fov: 45 }}
         gl={{ antialias: true, logarithmicDepthBuffer: true }}
       >
-        <color attach="background" args={['#0d0f13']} />
+        <color attach="background" args={[bgColor]} />
         
         {/* Fog to give digital twin feeling of scale */}
-        <fog attach="fog" args={['#0d0f13', 30, 110]} />
+        <fog attach="fog" args={[bgColor, 30, 110]} />
 
         {/* Dynamic camera handler */}
         <CameraHandler view={cameraView} clickTarget={clickTarget} />
 
         {/* Ambient & Global Directional Light */}
-        <ambientLight intensity={0.4} />
+        <ambientLight intensity={isDark ? 0.4 : 0.65} />
         
         <directionalLight
           position={[20, 45, 10]}
@@ -183,6 +188,7 @@ export const WarehouseCanvas: React.FC<WarehouseCanvasProps> = ({
           floor={layout.floor} 
           aisles={layout.aisles} 
           onFloorDoubleClick={setClickTarget} 
+          isDark={isDark}
         />
 
         {/* Racks Group */}

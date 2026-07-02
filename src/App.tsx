@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Database, Eye, Activity, HardDrive } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Database, Eye, Activity, HardDrive, Sun, Moon } from 'lucide-react';
 import './App.css';
 import { generateWarehouseLayout, calculateWarehouseStats, DEFAULT_LAYOUT_PARAMS } from './data/mockWarehouseData';
 import type { WarehouseLayout, LayoutParameters, Bay, ShelfLevel, Rack } from './types/warehouse';
@@ -9,6 +9,16 @@ import { InspectorPanel } from './components/UI/InspectorPanel';
 
 function App() {
   const [parameters, setParameters] = useState<LayoutParameters>(DEFAULT_LAYOUT_PARAMS);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // Synchronize CSS class for document theme
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+  }, [theme]);
   const [layout, setLayout] = useState<WarehouseLayout>(() => ({
     warehouseName: 'Apex 3D Logistics Twin',
     floor: {
@@ -322,6 +332,25 @@ function App() {
             <span className="stat-label">Occupancy Rate</span>
             <span className="stat-value">{Math.round(stats.occupancyRate * 100)}%</span>
           </div>
+
+          <div className="header-stat-item" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '0.75rem', display: 'flex', alignItems: 'center' }}>
+            <button 
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="btn-secondary"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.4rem', 
+                padding: '0.35rem 0.65rem', 
+                borderRadius: '6px', 
+                fontSize: '0.7rem',
+                cursor: 'pointer'
+              }}
+            >
+              {theme === 'dark' ? <Sun size={12} /> : <Moon size={12} />}
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -343,6 +372,7 @@ function App() {
           onSelectBay={setSelectedBayId}
           onMoveRack={handleMoveRack}
           cameraView={cameraView}
+          theme={theme}
         />
 
         {/* Dashboard Control panel overlay */}
