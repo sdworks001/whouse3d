@@ -9,8 +9,9 @@ interface InspectorPanelProps {
   rackId: string | null;
   rackLevelsCount: number | null;
   rackBaysCount: number | null;
+  rackRotation: number | null;
   onUpdateBay: (bayId: string, updatedBay: Bay) => void;
-  onUpdateRack: (rackId: string, levelsCount: number, baysCount: number) => void;
+  onUpdateRack: (rackId: string, levelsCount: number, baysCount: number, rotation: number) => void;
   onDeleteRack: (rackId: string) => void;
   onClose: () => void;
 }
@@ -22,6 +23,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   rackId,
   rackLevelsCount,
   rackBaysCount,
+  rackRotation,
   onUpdateBay,
   onUpdateRack,
   onDeleteRack,
@@ -36,6 +38,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
   const [rackLevels, setRackLevels] = useState(4);
   const [rackBays, setRackBays] = useState(3);
+  const [rackRot, setRackRot] = useState(0);
 
   // Synchronize local edit fields when selectedBay changes
   useEffect(() => {
@@ -56,9 +59,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     
     if (rackLevelsCount !== null) setRackLevels(rackLevelsCount);
     if (rackBaysCount !== null) setRackBays(rackBaysCount);
+    if (rackRotation !== null) setRackRot(rackRotation);
     
     setIsEditing(false);
-  }, [selectedBay, rackLevelsCount, rackBaysCount]);
+  }, [selectedBay, rackLevelsCount, rackBaysCount, rackRotation]);
 
   if (!selectedBay) {
     return (
@@ -379,7 +383,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   onChange={(e) => {
                     const val = parseInt(e.target.value) || 2;
                     setRackLevels(val);
-                    onUpdateRack(rackId, val, rackBays);
+                    onUpdateRack(rackId, val, rackBays, rackRot);
                   }}
                 />
               </div>
@@ -399,9 +403,26 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   onChange={(e) => {
                     const val = parseInt(e.target.value) || 2;
                     setRackBays(val);
-                    onUpdateRack(rackId, rackLevels, val);
+                    onUpdateRack(rackId, rackLevels, val, rackRot);
                   }}
                 />
+              </div>
+
+              <div className="form-group">
+                <label style={{ fontSize: '0.75rem', color: 'hsl(var(--text-secondary))' }}>Orientation</label>
+                <select
+                  className="select-input"
+                  style={{ padding: '0.4rem', fontSize: '0.85rem' }}
+                  value={rackRot}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setRackRot(val);
+                    onUpdateRack(rackId, rackLevels, rackBays, val);
+                  }}
+                >
+                  <option value="0">Parallel (0°)</option>
+                  <option value={String(Math.PI / 2)}>Perpendicular (90°)</option>
+                </select>
               </div>
 
               <button 

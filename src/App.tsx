@@ -144,7 +144,7 @@ function App() {
   };
 
   // Update an entire rack's dimensions (rebuilds shelf levels and bay slots)
-  const handleUpdateRack = (rackId: string, levelsCount: number, baysCount: number) => {
+  const handleUpdateRack = (rackId: string, levelsCount: number, baysCount: number, rotation: number) => {
     const updatedRacks = layout.racks.map((rack) => {
       if (rack.id === rackId) {
         const newLevels: ShelfLevel[] = [];
@@ -176,6 +176,7 @@ function App() {
           ...rack,
           levelsCount,
           baysCount,
+          rotation,
           levels: newLevels,
           height: rackHeight,
           length: rackLength
@@ -204,7 +205,8 @@ function App() {
               rackName: rack.name,
               levelIndex: level.levelIndex,
               rackLevelsCount: rack.levelsCount,
-              rackBaysCount: rack.baysCount
+              rackBaysCount: rack.baysCount,
+              rackRotation: rack.rotation
             };
           }
         }
@@ -365,6 +367,7 @@ function App() {
           rackId={selectedInfo ? selectedInfo.rackId : null}
           rackLevelsCount={selectedInfo ? selectedInfo.rackLevelsCount : null}
           rackBaysCount={selectedInfo ? selectedInfo.rackBaysCount : null}
+          rackRotation={selectedInfo ? selectedInfo.rackRotation : null}
           onUpdateBay={handleUpdateBay}
           onUpdateRack={handleUpdateRack}
           onDeleteRack={handleDeleteRack}
