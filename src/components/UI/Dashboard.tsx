@@ -11,6 +11,8 @@ interface DashboardProps {
   stats: WarehouseStats;
   layoutJson: WarehouseLayout;
   onLoadJson: (jsonStr: string) => boolean;
+  onAddRack: (name: string, x: number, z: number, rotation: number, levels: number, bays: number) => void;
+  onClearFloor: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -21,11 +23,45 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSaveToApi,
   stats,
   layoutJson,
-  onLoadJson
+  onLoadJson,
+  onAddRack,
+  onClearFloor
 }) => {
   const [jsonOpen, setJsonOpen] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
+
+  // Construction State
+  const [newRackName, setNewRackName] = useState('Rack C1');
+  const [newRackX, setNewRackX] = useState(0);
+  const [newRackZ, setNewRackZ] = useState(0);
+  const [newRackRotation, setNewRackRotation] = useState(0);
+  const [newRackLevels, setNewRackLevels] = useState(4);
+  const [newRackBays, setNewRackBays] = useState(3);
+
+  const handleCreateRackClick = () => {
+    if (!newRackName.trim()) {
+      alert('Please enter a rack identifier name');
+      return;
+    }
+    onAddRack(
+      newRackName,
+      newRackX,
+      newRackZ,
+      newRackRotation,
+      newRackLevels,
+      newRackBays
+    );
+    // Auto increment default name for next rack
+    setNewRackName(prev => {
+      const match = prev.match(/(\d+)$/);
+      if (match) {
+        const nextNum = parseInt(match[1]) + 1;
+        return prev.replace(/\d+$/, String(nextNum));
+      }
+      return prev + ' 1';
+    });
+  };
 
   const handleSliderChange = (key: keyof LayoutParameters, val: number) => {
     onUpdateParameters({
@@ -157,8 +193,119 @@ export const Dashboard: React.FC<DashboardProps> = ({
               />
             </div>
 
-            <button className="btn-primary" onClick={onGenerate} style={{ marginTop: '0.25rem' }}>
-              <RefreshCw size={14} /> Rebuild Twin
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+              <button className="btn-secondary" onClick={onClearFloor} style={{ flex: 1, fontSize: '0.75rem', padding: '0.5rem' }}>
+                Clear Floor
+              </button>
+              <button className="btn-primary" onClick={onGenerate} style={{ flex: 1.2, fontSize: '0.75rem', padding: '0.5rem' }}>
+                <RefreshCw size={12} /> Auto Populate
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Construction Tools - Add Rack-by-Rack */}
+        <div>
+          <span className="section-title">Construction Mode</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)' }}>
+            
+            <div className="form-group">
+              <label style={{ fontSize: '0.7rem', color: 'hsl(var(--text-secondary))' }}>Rack Identifier</label>
+              <input
+                type="text"
+                className="input-text"
+                style={{ padding: '0.4rem', fontSize: '0.8rem' }}
+                value={newRackName}
+                onChange={(e) => setNewRackName(e.target.value)}
+                placeholder="e.g. Rack Custom 1"
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <div className="control-group">
+                <div className="control-label" style={{ fontSize: '0.65rem' }}>
+                  <span>Position X</span>
+                  <span>{newRackX}m</span>
+                </div>
+                <input
+                  type="range"
+                  className="slider-input"
+                  min="-25"
+                  max="25"
+                  step="1"
+                  value={newRackX}
+                  onChange={(e) => setNewRackX(parseInt(e.target.value))}
+                />
+              </div>
+              <div className="control-group">
+                <div className="control-label" style={{ fontSize: '0.65rem' }}>
+                  <span>Position Z</span>
+                  <span>{newRackZ}m</span>
+                </div>
+                <input
+                  type="range"
+                  className="slider-input"
+                  min="-35"
+                  max="35"
+                  step="1"
+                  value={newRackZ}
+                  onChange={(e) => setNewRackZ(parseInt(e.target.value))}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.5rem', alignItems: 'center' }}>
+              <div className="form-group">
+                <label style={{ fontSize: '0.7rem', color: 'hsl(var(--text-secondary))' }}>Orientation</label>
+                <select
+                  className="select-input"
+                  style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                  value={newRackRotation}
+                  onChange={(e) => setNewRackRotation(parseFloat(e.target.value))}
+                >
+                  <option value="0">Parallel (0°)</option>
+                  <option value={String(Math.PI / 2)}>Perpendicular (90°)</option>
+                </select>
+              </div>
+              <div className="control-group">
+                <div className="control-label" style={{ fontSize: '0.65rem' }}>
+                  <span>Levels</span>
+                  <span>{newRackLevels}</span>
+                </div>
+                <input
+                  type="range"
+                  className="slider-input"
+                  min="2"
+                  max="6"
+                  step="1"
+                  value={newRackLevels}
+                  onChange={(e) => setNewRackLevels(parseInt(e.target.value))}
+                />
+              </div>
+            </div>
+
+            <div className="control-group">
+              <div className="control-label" style={{ fontSize: '0.65rem' }}>
+                <span>Bays Count</span>
+                <span>{newRackBays}</span>
+              </div>
+              <input
+                type="range"
+                className="slider-input"
+                min="2"
+                max="5"
+                step="1"
+                value={newRackBays}
+                onChange={(e) => setNewRackBays(parseInt(e.target.value))}
+              />
+            </div>
+
+            <button 
+              className="btn-primary" 
+              style={{ fontSize: '0.75rem', padding: '0.5rem', marginTop: '0.2rem' }}
+              onClick={handleCreateRackClick}
+            >
+              Construct Rack Unit
             </button>
           </div>
         </div>

@@ -2,23 +2,108 @@ import { useState } from 'react';
 import { Database, Eye, Activity, HardDrive } from 'lucide-react';
 import './App.css';
 import { generateWarehouseLayout, calculateWarehouseStats, DEFAULT_LAYOUT_PARAMS } from './data/mockWarehouseData';
-import type { WarehouseLayout, LayoutParameters, Bay, ShelfLevel } from './types/warehouse';
+import type { WarehouseLayout, LayoutParameters, Bay, ShelfLevel, Rack } from './types/warehouse';
 import { WarehouseCanvas } from './components/Three/WarehouseCanvas';
 import { Dashboard } from './components/UI/Dashboard';
 import { InspectorPanel } from './components/UI/InspectorPanel';
 
 function App() {
   const [parameters, setParameters] = useState<LayoutParameters>(DEFAULT_LAYOUT_PARAMS);
-  const [layout, setLayout] = useState<WarehouseLayout>(() => generateWarehouseLayout(DEFAULT_LAYOUT_PARAMS));
+  const [layout, setLayout] = useState<WarehouseLayout>(() => ({
+    warehouseName: 'Apex 3D Logistics Twin',
+    floor: {
+      width: DEFAULT_LAYOUT_PARAMS.floorWidth,
+      length: DEFAULT_LAYOUT_PARAMS.floorLength,
+      gridSize: 2
+    },
+    aisles: [
+      { id: 'aisle-1', name: 'Aisle A', x: -15, z: 0, width: 5, length: 70, color: 'rgba(255, 235, 59, 0.15)' },
+      { id: 'aisle-2', name: 'Aisle B', x: 0, z: 0, width: 5, length: 70, color: 'rgba(255, 235, 59, 0.15)' },
+      { id: 'aisle-3', name: 'Aisle C', x: 15, z: 0, width: 5, length: 70, color: 'rgba(255, 235, 59, 0.15)' }
+    ],
+    racks: [],
+    forklifts: []
+  }));
   const [selectedBayId, setSelectedBayId] = useState<string | null>(null);
   const [cameraView, setCameraView] = useState<'orbit' | 'top' | 'isometric' | 'aisle'>('orbit');
   const [isLoadingApi, setIsLoadingApi] = useState(false);
   const [apiLoadMessage, setApiLoadMessage] = useState('');
 
-  // Re-generate layout when parameter structure changes
+  // Re-generate layout (Procedural Generation)
   const handleGenerate = () => {
     const newLayout = generateWarehouseLayout(parameters);
     setLayout(newLayout);
+    setSelectedBayId(null);
+  };
+
+  // Clear all racks and forklifts to start from an empty floor
+  const handleClearFloor = () => {
+    setLayout({
+      ...layout,
+      racks: [],
+      forklifts: []
+    });
+    setSelectedBayId(null);
+  };
+
+  // Construct a new rack unit step-by-step
+  const handleAddRack = (
+    name: string,
+    x: number,
+    z: number,
+    rotation: number,
+    levelsCount: number,
+    baysCount: number
+  ) => {
+    const rackId = `rack-custom-${Date.now()}`;
+    const rackHeight = levelsCount * 1.8 + 0.5;
+    const rackLength = baysCount * 3.2;
+    const rackWidth = 2.5;
+
+    const levels: ShelfLevel[] = [];
+    for (let l = 0; l < levelsCount; l++) {
+      const bays: Bay[] = [];
+      for (let b = 0; b < baysCount; b++) {
+        bays.push({
+          id: `${rackId}-L${l}-B${b}`,
+          bayIndex: b,
+          status: 'empty'
+        });
+      }
+      levels.push({
+        levelIndex: l,
+        yOffset: l * 1.8 + 0.5,
+        bays
+      });
+    }
+
+    const newRack: Rack = {
+      id: rackId,
+      name,
+      x,
+      z,
+      y: 0,
+      rotation,
+      width: rackWidth,
+      length: rackLength,
+      height: rackHeight,
+      levelsCount,
+      baysCount,
+      levels
+    };
+
+    setLayout({
+      ...layout,
+      racks: [...layout.racks, newRack]
+    });
+  };
+
+  // Delete an entire rack structure
+  const handleDeleteRack = (rackId: string) => {
+    setLayout({
+      ...layout,
+      racks: layout.racks.filter(r => r.id !== rackId)
+    });
     setSelectedBayId(null);
   };
 
@@ -259,6 +344,8 @@ function App() {
           stats={stats}
           layoutJson={layout}
           onLoadJson={handleLoadJson}
+          onAddRack={handleAddRack}
+          onClearFloor={handleClearFloor}
         />
 
         {/* Inspector Panel overlay */}
@@ -271,6 +358,7 @@ function App() {
           rackBaysCount={selectedInfo ? selectedInfo.rackBaysCount : null}
           onUpdateBay={handleUpdateBay}
           onUpdateRack={handleUpdateRack}
+          onDeleteRack={handleDeleteRack}
           onClose={() => setSelectedBayId(null)}
         />
 

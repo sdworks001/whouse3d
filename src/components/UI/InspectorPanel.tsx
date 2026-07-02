@@ -11,6 +11,7 @@ interface InspectorPanelProps {
   rackBaysCount: number | null;
   onUpdateBay: (bayId: string, updatedBay: Bay) => void;
   onUpdateRack: (rackId: string, levelsCount: number, baysCount: number) => void;
+  onDeleteRack: (rackId: string) => void;
   onClose: () => void;
 }
 
@@ -23,6 +24,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   rackBaysCount,
   onUpdateBay,
   onUpdateRack,
+  onDeleteRack,
   onClose
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -401,6 +403,18 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   }}
                 />
               </div>
+
+              <button 
+                className="btn-secondary" 
+                style={{ color: 'hsl(var(--accent-danger))', borderColor: 'rgba(255, 53, 94, 0.2)', width: '100%', marginTop: '0.5rem', fontSize: '0.75rem', padding: '0.5rem' }}
+                onClick={() => {
+                  if (confirm(`Are you sure you want to delete ${rackName}?`)) {
+                    onDeleteRack(rackId);
+                  }
+                }}
+              >
+                <Trash2 size={12} style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Delete Entire Rack
+              </button>
             </div>
           </div>
         )}
