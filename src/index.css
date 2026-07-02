@@ -1,0 +1,46 @@
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+  
+  /* Primary HSL Palettes */
+  --bg-base: 220 20% 8%;
+  --bg-surface: 220 20% 12%;
+  --bg-card: 220 20% 16%;
+  --border-color: 220 15% 22%;
+  
+  --text-primary: 220 10% 95%;
+  --text-secondary: 220 10% 70%;
+  --text-muted: 220 8% 45%;
+  
+  --accent-primary: 210 100% 50%; /* Electric Blue */
+  --accent-primary-rgb: 0, 114, 255;
+  --accent-success: 145 80% 45%;  /* Neon Emerald */
+  --accent-warning: 35 100% 50%;   /* Caution Amber */
+  --accent-danger: 355 85% 55%;    /* Alert Red */
+  
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: hsl(var(--bg-base));
+  color: hsl(var(--text-primary));
+  font-family: var(--font-sans);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
