@@ -11,6 +11,7 @@ interface WarehouseCanvasProps {
   layout: WarehouseLayout;
   selectedBayId: string | null;
   onSelectBay: (bayId: string) => void;
+  onMoveRack: (rackId: string, x: number, z: number) => void;
   cameraView: 'orbit' | 'top' | 'isometric' | 'aisle';
 }
 
@@ -114,6 +115,7 @@ export const WarehouseCanvas: React.FC<WarehouseCanvasProps> = ({
   layout,
   selectedBayId,
   onSelectBay,
+  onMoveRack,
   cameraView
 }) => {
   // Generate ceiling point lights above aisles for warehouse look
@@ -191,6 +193,9 @@ export const WarehouseCanvas: React.FC<WarehouseCanvasProps> = ({
               rack={rack}
               selectedBayId={selectedBayId}
               onSelectBay={onSelectBay}
+              onMoveRack={onMoveRack}
+              floorWidth={layout.floor.width}
+              floorLength={layout.floor.length}
             />
           ))}
         </group>

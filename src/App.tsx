@@ -107,6 +107,14 @@ function App() {
     setSelectedBayId(null);
   };
 
+  // Drag-and-move rack position along the floor
+  const handleMoveRack = (rackId: string, x: number, z: number) => {
+    setLayout(prev => ({
+      ...prev,
+      racks: prev.racks.map(r => r.id === rackId ? { ...r, x, z } : r)
+    }));
+  };
+
   // Update a single bay in the layout state (handles Edit details, empty, reserve)
   const handleUpdateBay = (bayId: string, updatedBay: Bay) => {
     const updatedRacks = layout.racks.map((rack) => {
@@ -331,6 +339,7 @@ function App() {
           layout={layout}
           selectedBayId={selectedBayId}
           onSelectBay={setSelectedBayId}
+          onMoveRack={handleMoveRack}
           cameraView={cameraView}
         />
 

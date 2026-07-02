@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useThree } from '@react-three/fiber';
+import * as THREE from 'three';
 import type { Rack } from '../../types/warehouse';
 import { Bay3D } from './Bay3D';
 
@@ -6,10 +8,23 @@ interface Rack3DProps {
   rack: Rack;
   selectedBayId: string | null;
   onSelectBay: (bayId: string) => void;
+  onMoveRack: (rackId: string, x: number, z: number) => void;
+  floorWidth: number;
+  floorLength: number;
 }
 
-export const Rack3D: React.FC<Rack3DProps> = ({ rack, selectedBayId, onSelectBay }) => {
+export const Rack3D: React.FC<Rack3DProps> = ({ 
+  rack, 
+  selectedBayId, 
+  onSelectBay, 
+  onMoveRack, 
+  floorWidth, 
+  floorLength 
+}) => {
   const { x, z, y, rotation, width, length, height, levels, baysCount } = rack;
+  
+  const { controls } = useThree();
+  const isDragging = useRef(false);
 
   const bayLength = length / baysCount;
   const bayHeight = 1.5;
@@ -20,8 +35,74 @@ export const Rack3D: React.FC<Rack3DProps> = ({ rack, selectedBayId, onSelectBay
   const steelColor = '#3b4252'; // Industrial slate grey
   const safetyOrange = '#d08770'; // Industrial safety orange
 
+  const handlePointerDown = (e: any) => {
+    e.stopPropagation();
+    isDragging.current = true;
+    if (controls) {
+      (controls as any).enabled = false;
+    }
+    e.target.setPointerCapture(e.pointerId);
+    document.body.style.cursor = 'grabbing';
+  };
+
+  const handlePointerUp = (e: any) => {
+    e.stopPropagation();
+    isDragging.current = false;
+    if (controls) {
+      (controls as any).enabled = true;
+    }
+    e.target.releasePointerCapture(e.pointerId);
+    document.body.style.cursor = 'auto';
+  };
+
+  const handlePointerMove = (e: any) => {
+    if (!isDragging.current) return;
+    e.stopPropagation();
+
+    // Mathematically intersect ray with Y=0 floor plane
+    const ray = e.ray as THREE.Ray;
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const targetPoint = new THREE.Vector3();
+
+    if (ray.intersectPlane(plane, targetPoint)) {
+      // Snap to 0.5m grid increments
+      const snappedX = Math.round(targetPoint.x * 2) / 2;
+      const snappedZ = Math.round(targetPoint.z * 2) / 2;
+
+      // Keep within safety boundaries
+      const marginX = width / 2 + 1;
+      const marginZ = length / 2 + 1;
+      const clampedX = Math.max(-floorWidth / 2 + marginX, Math.min(floorWidth / 2 - marginX, snappedX));
+      const clampedZ = Math.max(-floorLength / 2 + marginZ, Math.min(floorLength / 2 - marginZ, snappedZ));
+
+      onMoveRack(rack.id, clampedX, clampedZ);
+    }
+  };
+
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation();
+    if (!isDragging.current) {
+      document.body.style.cursor = 'grab';
+    }
+  };
+
+  const handlePointerOut = (e: any) => {
+    e.stopPropagation();
+    if (!isDragging.current) {
+      document.body.style.cursor = 'auto';
+    }
+  };
+
   return (
-    <group position={[x, y, z]} rotation={[0, rotation, 0]}>
+    <group 
+      position={[x, y, z]} 
+      rotation={[0, rotation, 0]}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerMove={handlePointerMove}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+    >
       {/* --- Vertical Steel Posts (4 Corners) --- */}
       {/* Front-Left Post */}
       <mesh position={[-width / 2 + postThickness / 2, height / 2, -length / 2 + postThickness / 2]} castShadow>
